@@ -1,0 +1,38 @@
+import { ArticleLayout } from '@/components/article-layout'
+import Image from 'next/image'
+import designSystem from './test-one.jpg'
+
+export const meta = {
+  author: 'Alex Vyber',
+  date: '2022-09-15',
+  title: 'Верстка из Макета',
+  description: 'Верстка из Макета',
+}
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+
+Простая верстка из Figma макета.
+
+<Image src={designSystem} alt="" className="shadow-lg" />
+
+### Требования к выполнению тестового задания:
+
+- Верстка не ломается на маленьком экране, карточки встают друг под другом.
+- Результат опубликовать в публичном репозитории на Github.
+- Страница должна быть доступна по урлу.
+
+### Будет плюсом:
+
+- Webpack для сборки.
+- Использование для верстки одной из технологий: LESS/SASS.
+- БЭМ в части именования классов.
+- ES2015+.
+- Хорошие практики с точки зрения accessibility, SEO, performance.
+
+## Результат:
+
+**Демо: [fesu8.alexeycontent.space](https://fesu8.alexeycontent.space/)**
+
+Webpack + SASS + HTML: [GitHub Repo](https://github.com/alexvyber/test-one-base)
+
+Vite + SASS + React + TypeScript: [GitHub Repo](https://github.com/alexvyber/rest-one-react)

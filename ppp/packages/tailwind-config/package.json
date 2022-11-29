@@ -1,8 +1,0 @@
-{
-  "name": "tailwind-config",
-  "version": "0.1.2",
-  "private": true,
-  "dependencies": {
-    "tailwindcss": "^3.2.4"
-  }
-}

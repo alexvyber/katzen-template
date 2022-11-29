@@ -1,0 +1,227 @@
+import { ArticleLayout } from '@/components/article-layout'
+
+export const meta = {
+  author: 'Alex Vyber',
+  date: '2022-09-16',
+  title: 'Переписываем Class Component на Functional',
+  description: 'Переписываем Class Component на Functional',
+}
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+
+## Тут все просто =))
+
+Демо: [aporia.alexeycontent.space](https://aporia.alexeycontent.space/)
+
+Репо: [github.com/alexvyber/test-two](https://github.com/alexvyber/test-two)
+
+### Исходный Код
+
+```TypeScript
+import _ from 'lodash';
+import React, {RefObject} from 'react';
+
+class UserList extends React.Component<IUserListProps, IUserListState> {
+	static defaultProps = {
+		isAvatarShown: true,
+		isShown: true,
+	};
+
+	constructor(props: IUserListProps) {
+		super(props);
+
+		this.state = {
+			animateAppearance: false,
+		};
+
+		this.trackUserMouseMovement = _.debounce(this.trackUserMouseMovement.bind(this), 100);
+	}
+
+	trackUserMouseMovement(e: PointerEvent) {
+		if (_.isFunction(this.props.trackUserMouseMovement)) {
+			this.props.trackUserMouseMovement.call(null, e);
+		}
+	}
+
+	componentDidMount() {
+		if (this.props.listRef?.current) {
+			this.props.listRef.current.addEventListener('pointerover', this.trackUserMouseMovement);
+		}
+	}
+
+	componentWillUnmount() {
+		if (this.props.listRef?.current) {
+			this.props.listRef.current.removeEventListener('pointerover', this.trackUserMouseMovement);
+		}
+	}
+
+	componentDidUpdate({selectedUserId: prevSelectedUserId}: IUserListProps) {
+		if (prevSelectedUserId !== this.props.selectedUserId) {
+			this.setState({
+				animateAppearance: !_.isUndefined(prevSelectedUserId) && !_.isUndefined(this.props.selectedUserId),
+			});
+		}
+	}
+
+	onSelect(userId?: number) {
+		if (userId && this.props.isSelectable) {
+			this.props.onSelect(userId);
+		}
+	}
+
+	render() {
+		if (!this.props.isShown) {
+			return null;
+		}
+
+		return (
+			<ul ref={this.props.listRef}>
+				{this.props.users.map((user) => (
+					<li
+						key={user.id}
+						className={user.id === this.props.selectedUserId && this.state.animateAppearance ? 'animated' : ''}
+					>
+						<header>{user.name}</header>
+						{this.props.isAvatarShown && (
+							<img width={40} height={40} src="https://cdn-icons-png.flaticon.com/512/1246/1246351.png?w=360" />
+						)}
+						<button onClick={() => this.onSelect(user.id)}> Select</button>
+						<footer>{user.vip && <i>{'👑'}</i>}</footer>
+					</li>
+				))}
+			</ul>
+		);
+	}
+}
+
+export interface IUserListProps {
+	isShown: true;
+	listRef?: RefObject<HTMLUListElement>;
+	selectedUserId: number;
+	isAvatarShown?: boolean;
+	isSelectable: boolean;
+	users: User[];
+	onSelect: (userId: number) => void;
+	trackUserMouseMovement?: (e: PointerEvent) => void;
+}
+
+interface IUserListState {
+	animateAppearance: boolean;
+}
+
+interface User {
+	id: number;
+	name: string;
+	vip: boolean;
+}
+
+export default UserList;
+
+```
+
+### Результат
+
+```TypeScript
+import _ from "lodash";
+import React, { RefObject, useEffect, useState } from "react";
+
+export const UserListFunctional: React.FC<IUserListProps> = ({
+  isShown = true,
+  listRef,
+  selectedUserId,
+  isAvatarShown = true,
+  isSelectable,
+  users,
+  onSelect,
+  trackUserMouseMovement = (e: PointerEvent) =>
+    console.warn(
+      `trackUserMouseMovement wasn't passed and X postion is ${e.pageX}`
+    ), // NOTE: Usually we don't really want empty event listener...
+}): JSX.Element => {
+  const [selectedUserIdState, setSelectedUserIdState] =
+    useState<Number>(selectedUserId);
+
+  const [animateAppearanceState, setAnimateAppearanceState] =
+    useState<Boolean>(false);
+
+  const trackerFunc = _.debounce(trackUserMouseMovement, 100);
+
+  useEffect(() => {
+    if (listRef?.current) {
+      // NOTE: In Dev mode useEffect run twice and therefore event will be added twice
+      // In prod it will be added only once.
+      listRef.current.addEventListener("pointerover", trackerFunc);
+    }
+    return function cleanup() {
+      if (listRef?.current) {
+        listRef.current.removeEventListener("pointerover", trackerFunc);
+      }
+    };
+  }, [trackerFunc]);
+
+  const handleSelect = (userId?: number) => {
+    if (userId && isSelectable) {
+      onSelect(userId);
+
+      setAnimateAppearanceState(userId !== selectedUserIdState);
+
+      setSelectedUserIdState(userId);
+    }
+  };
+
+  return (
+    <>
+      {isShown ? (
+        <ul ref={listRef}>
+          {users.map((user) => (
+            <li
+              key={user.id}
+              className={
+                user.id === selectedUserIdState && animateAppearanceState
+                  ? "animated"
+                  : ""
+              }
+            >
+              <header>
+                {user.name}{" "}
+                {user.id === selectedUserIdState ? <span>SELECTED</span> : null}
+              </header>
+              <main>
+                <aside>{user.vip && <i>{"👑"}</i>}</aside>
+
+                {isAvatarShown && (
+                  <img
+                    width={40}
+                    height={40}
+                    src="https://cdn-icons-png.flaticon.com/512/1246/1246351.png?w=360"
+                  />
+                )}
+                <button onClick={() => handleSelect(user.id)}> Select</button>
+              </main>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </>
+  );
+};
+
+export interface IUserListProps {
+  isShown: true;
+  listRef?: RefObject<HTMLUListElement>;
+  selectedUserId: number;
+  isAvatarShown?: boolean;
+  isSelectable: boolean;
+  users: User[];
+  onSelect: (userId: number) => void;
+  trackUserMouseMovement?: (e: PointerEvent) => void;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  vip: boolean;
+}
+
+export default UserListFunctional;
+```

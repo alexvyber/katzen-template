@@ -8,17 +8,28 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
+    "clean": "turbo run clean",
+    "dev": "turbo run dev",
+    "dev:gen": "concurrently \"turbo run dev\" \"yarn workspace web gen:watch\"",
+    "format": "prettier --write \"**/*.{cjs,mjs,js,json,ts,tsx,md}\" ",
+    "gen": "turbo run gen",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md,mdx}\""
+    "sort": "sort-package-json apps/**/package.json packages/**/package.json",
+    "start": "turbo run start",
+    "wind": "rustywind --write . "
   },
   "devDependencies": {
+    "concurrently": "^7.6.0",
     "eslint-config-custom": "*",
     "prettier": "latest",
+    "sort-package-json": "^2.1.0",
     "turbo": "latest"
   },
   "engines": {
     "node": ">=14.0.0"
   },
-  "packageManager": "yarn@3.3.0"
+  "packageManager": "yarn@3.3.0",
+  "dependencies": {
+    "react": "18.2.0"
+  }
 }
