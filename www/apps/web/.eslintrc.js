@@ -1,8 +1,8 @@
 module.exports = {
   root: true,
-  // parserOptions: {
-  //   project: "./tsconfig.json",
-  // },
+  parserOptions: {
+    project: "./tsconfig.json",
+  },
   parser: "@typescript-eslint/parser",
   extends: ["next", "next/core-web-vitals", "custom"],
   rules: {
